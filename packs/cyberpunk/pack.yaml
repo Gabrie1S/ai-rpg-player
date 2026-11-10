@@ -1,0 +1,69 @@
+id: cyberpunk
+name: 霓虹深渊·2084
+version: "1.1.0"
+genre: 赛博朋克都市雇佣兵
+author: AI-RPG-Engine
+description: 巨型企业垄断的垂直霓虹巨城“新巴别塔”。义体改造、黑客矩阵潜行、街头帮派火并与公司暗战交织的硬核文字冒险。
+theme: cyberpunk-neon
+
+# 这个包留给玩家的选择多一些：开局身份三选一
+setup:
+  - {id: name, label: "主角的名字或代号", mode: ask, required: false, target: sheet.name, hint: "留空由 AI 起名"}
+  - id: identity
+    label: 开局身份
+    mode: ask
+    type: choice
+    required: false
+    target: canon
+    options: ["被除名的公司安保特勤", "地下诊所走出的野生黑客", "跨区武装押运幸存者"]
+  - {id: ui, mode: default}
+
+calendar:
+  format: modern
+  era: NC.
+  start_year: 2084
+  start_month: 11
+  start_day: 1
+  months_per_year: 12
+  days_per_month: 30
+
+# 世界与角色定制化 UI Schema（由 ui-designer 技能定义，不影响固定系统外壳）
+ui_schema:
+  tagline: "霓虹照不到的锈铁下城，每一克义体都标好了价码"
+  hud_tabs:
+    scene:      {label: "街头手札", icon: "📡"}
+    sheet:      {label: "义体档案", icon: "🦾"}
+    persona:    {label: "行为侧写", icon: "🧠"}
+    milestones: {label: "传奇履历", icon: "🏆"}
+
+  world_status:
+    - {key: day,   label: "天数",     icon: "📅", widget: badge, tone: accent}
+    - {key: date,  label: "新巴别历", icon: "🕒", widget: badge}
+    - {key: loc,   label: "当前坐标", icon: "📍", widget: badge}
+    - {key: scene, label: "街区环境", icon: "🌆", widget: badge}
+    - {key: heat,  label: "企业警戒", icon: "🚨", widget: meter, max: 100, warn_at: 50, danger_at: 80, default: 12}
+
+  player_status:
+    - {key: rank,        label: "街头阶位",     field: street_tier,     icon: "⚡", widget: kv}
+    - {key: chrome_load, label: "义体神经负荷", field: chrome_load,     icon: "🔥", widget: bar, max: 100, unit: "%", color: secondary, default: 24}
+    - {key: core_engine, label: "神经操作系统", field: os_core,         icon: "🧠", widget: kv}
+    - {key: currency,    label: "信用点 (eb)",  field: eddies,          icon: "💳", widget: kv}
+    - {key: status_tags, label: "机体词条",     field: status_tags,     icon: "🩺", widget: tags, default: ["体征平稳", "神经同步正常"]}
+
+  character_sheet:
+    attributes_title: "机体与神经矩阵"
+    sections:
+      - {id: status_widgets, title: "核心体征与神经负荷", visible: true}
+      - {id: attributes,     title: "四维基础矩阵",       visible: true}
+      - {id: affinities,     title: "义体与战术相性",     visible: true, hide_empty: true}
+      - {id: abilities,      title: "专属协议与天赋",     visible: true, hide_empty: true}
+      - {id: skills,         title: "黑客与战术技能",     visible: true, hide_empty: true}
+      - {id: gear,           title: "已安装义体与武装",   visible: true, hide_empty: false}
+      - {id: reputation,     title: "巨头与帮派声望",     visible: true, hide_empty: true}
+      - {id: inventory,      title: "随身芯片与备注",     visible: true, hide_empty: false}
+
+  journal_sections:
+    - {id: contracts, title: "当前委托与目标", icon: "🎯", hint: "正在跟进的街头雇佣委托与阶段目标"}
+    - {id: contacts,  title: "认识的人脉",     icon: "🤝", hint: "打过交道的中间人、义体医生、黑客与帮派人物"}
+    - {id: intel,     title: "街头风声与情报", icon: "📻", hint: "从酒吧、暗网终端或路人口中听到的局势异动"}
+    - {id: mysteries, title: "追查中的疑点",   icon: "🔍", hint: "尚未查明真相的线索断层与幕后黑手痕迹"}

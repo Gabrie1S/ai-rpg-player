@@ -1,0 +1,27 @@
+# 每个玩家世界存档是独立的 git 仓库，引擎主仓库不跟踪个人存档与导出产物
+/saves/
+exports/*
+logs/
+
+# 仅供本地开发使用的架构记录
+/ARCHITECTURE_REPORT.md
+
+# 世界包的运行时切片缓存（超大设定文档自动生成）
+packs/*/.slices/
+
+# Python 缓存与虚拟环境
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# 本地环境变量、私有密钥配置与临时文件
+config.local.yaml
+.claude/settings.local.json
+.env
+.env.*
+!.env.example
+_backup/
+*.tmp

@@ -1,0 +1,72 @@
+# 机器可读的规则数据，与 rules.md 保持一致（初稿数值，玩起来再调）
+schema_mapping:
+  rank_field: realm
+  affinity_field: linggen
+  aptitude_field: zizhi
+  engine_field: gongfa
+  currency_field: spirit_stones
+
+
+# 境界：写法为 大境界名 + 等级（壹~玖），如 金丹叁；凡人没有等级
+levels: [壹, 贰, 叁, 肆, 伍, 陆, 柒, 捌, 玖]
+ranks:
+# 每个大境界都是质变，属性区间拉开
+  - {name: 凡人, levels: false, attr_range: [1, 3], lifespan: 70}
+  - {name: 炼气, levels: true, attr_range: [2, 5], lifespan: 120}
+  - {name: 筑基, levels: true, attr_range: [4, 8], lifespan: 200}
+  - {name: 金丹, levels: true, attr_range: [7, 12], lifespan: 500}
+  - {name: 元婴, levels: true, attr_range: [11, 17], lifespan: 1000}
+  - {name: 化神, levels: true, attr_range: [16, 23], lifespan: 2000}
+  - {name: 炼虚, levels: true, attr_range: [22, 30], lifespan: 3000}
+  - {name: 合体, levels: true, attr_range: [29, 38], lifespan: 5000}
+  - {name: 大乘, levels: true, attr_range: [37, 48], lifespan: 10000}
+# 口语说法：壹~叁 初期，肆~陆 中期，柒~捌 后期，玖 大圆满（临近突破）
+level_names: {壹: 初期, 贰: 初期, 叁: 初期, 肆: 中期, 伍: 中期, 陆: 中期, 柒: 后期, 捌: 后期, 玖: 大圆满}
+
+attributes: [体魄, 灵力, 神识, 魅力]
+attitude_axes: [好感, 信任, 敬畏]
+aptitude_axes: [根骨, 悟性]
+aptitude_grades: [下, 中, 上, 绝世]
+
+# 属性
+elements:
+  basic: [金, 木, 水, 火, 土]
+  variant: [风, 雷]
+# 金与无属性一样，不克制别的，也不被克制（与无属性的差异化待定）
+restrain:          # 克制：攻方 +2，被克 −2
+  火: [木]
+  木: [土, 风]
+  水: [火]
+  土: [水, 雷]
+  风: [土]
+  雷: [木]
+support:           # 相生 / 助力：+1
+  金: [水]
+  水: [木, 雷]
+  木: [火]
+  火: [土]
+  土: [金]
+  风: [火, 雷]
+
+# 强力组合：同一人兼有两种灵根，或两人配合施展合击
+combos:
+  - {elements: [风, 火], note: 风助火势，攻势凶猛}
+  - {elements: [风, 雷], note: 风助雷行，迅疾无匹}
+  - {elements: [水, 风], note: 助雷；也是风水、玄学一脉的根基}
+
+# 灵根：每条灵根各有纯度，写作 {风: 至纯, 雷: 至纯}；空字典 = 无灵根
+affinity_grades: [驳杂, 寻常, 纯净, 至纯]
+purity_bonus: {驳杂: 0, 寻常: 1, 纯净: 2, 至纯: 3}       # 对应属性技能的加成
+purity_speed: {驳杂: 0.6, 寻常: 1.0, 纯净: 1.5, 至纯: 2.0}  # 功法契合时的修炼速度系数
+root_count_speed: {1: 1.2, 2: 1.0, 3: 0.9, 4: 0.75, 5: 0.6, 6: 0.5, 7: 0.4}  # 灵根越多越分散
+
+# 品阶：功法与技能通用，写法如 玄阶中品
+grades: [黄, 玄, 地, 天]
+grade_steps: [下, 中, 上]
+orientations: [法修, 剑修, 体修, 佛修, 玄修, 兼修, 其他]
+skill_types: [攻击, 防御, 身法, 控制, 辅助]
+skill_levels: [入门, 熟练, 精通, 大成, 圆满]
+gear_tiers: [法器, 灵器, 法宝, 灵宝, 仙器]
+
+difficulty: {简单: 6, 普通: 8, 困难: 10, 极难: 12, 传说: 14}
+modifier_cap: 6     # 除境界差外，其余修正合计不超过 ±6

@@ -1,0 +1,69 @@
+<style>
+  h3 { margin: 0 0 10px; font: 600 13px var(--font-heading); }
+  section { margin-bottom: 18px; }
+  .ladder { display: flex; flex-direction: column-reverse; gap: 3px; }
+  .rung { display: flex; align-items: center; gap: 8px; padding: 3px 8px; border-radius: 4px; color: var(--text-muted); }
+  .rung.past { color: var(--text-main); }
+  .rung.now { color: var(--on-accent); background: var(--accent-primary); font-weight: 600; }
+  .rung .mark { margin-left: auto; font-size: 12px; }
+  .attr { display: grid; grid-template-columns: 36px 1fr 24px; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .track { height: 6px; border-radius: 3px; background: var(--border-color); overflow: hidden; }
+  .fill { height: 100%; background: var(--accent-secondary); }
+  .roots { display: flex; flex-wrap: wrap; gap: 6px; }
+  .root { padding: 1px 9px; border-radius: 999px; border: 1px solid var(--border-color); }
+  .empty { color: var(--text-muted); }
+  button { font: inherit; width: 100%; padding: 7px; border-radius: 6px; cursor: pointer; color: var(--on-accent); background: var(--accent-primary); border: none; }
+</style>
+
+<section>
+  <h3>修行境界</h3>
+  <div class="ladder" id="ladder"></div>
+</section>
+<section>
+  <h3>灵根（世人所见）</h3>
+  <div class="roots" id="roots"></div>
+</section>
+<section>
+  <h3>四项属性</h3>
+  <div id="attrs"></div>
+</section>
+<button id="foresight">发动一线天</button>
+
+<script>
+  function esc(text) {
+    var el = document.createElement("span");
+    el.textContent = text == null ? "" : String(text);
+    return el.innerHTML;
+  }
+
+  function realmOf(rank, ranks) {
+    return ranks.find(function (name) { return String(rank || "").indexOf(name) === 0; }) || "";
+  }
+
+  document.getElementById("foresight").onclick = function () {
+    RPG.fillInput("/yixiantian ");
+  };
+
+  RPG.onState(function (state) {
+    var player = state.player || {};
+    var ranks = (state.rules && state.rules.ranks) || [];
+    var current = realmOf(player.rank, ranks);
+    var currentIdx = ranks.indexOf(current);
+    document.getElementById("ladder").innerHTML = ranks.map(function (name, i) {
+      var cls = i === currentIdx ? "now" : i < currentIdx ? "past" : "";
+      var level = i === currentIdx ? String(player.rank).slice(name.length) : "";
+      return '<div class="rung ' + cls + '"><span>' + esc(name) + '</span><span class="mark">' + esc(level) + "</span></div>";
+    }).join("");
+
+    var roots = Object.keys(player.affinity || {});
+    document.getElementById("roots").innerHTML = roots.length
+      ? roots.map(function (k) { return '<span class="root">' + esc(k) + " · " + esc(player.affinity[k]) + "</span>"; }).join("")
+      : '<span class="empty">尚未发现灵根</span>';
+
+    var attrs = player.attributes || {};
+    var top = Math.max.apply(null, [10].concat(Object.values(attrs)));
+    document.getElementById("attrs").innerHTML = Object.keys(attrs).map(function (k) {
+      return '<div class="attr"><span>' + esc(k) + '</span><div class="track"><div class="fill" style="width:' + (attrs[k] / top * 100) + '%"></div></div><span>' + esc(attrs[k]) + "</span></div>";
+    }).join("");
+  });
+</script>

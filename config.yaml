@@ -1,0 +1,29 @@
+active_pack: cyberpunk
+front_driver:
+  type: api
+  provider: openai_compat
+  api_base: https://api.deepseek.com/v1
+  model: deepseek-chat
+  cli_tool: claude
+  cli_args: []
+  api_format: auto
+  harness_mode: external_ide
+  effort: medium
+back_driver:
+  inherit_front: false
+  same_endpoint: true
+  model: deepseek-reasoner
+  effort: high
+narrative_prompt:
+  authors_note_template: 【写作提醒】① 分段自然，用常见词，只写和情节有关的，一轮最多一个新名字； ② 因果写明白，主角有反应，人物首次出场交代姓名、身份、关系、外貌；
+    ③ 台词像真人说话，不写金句和排好队的漂亮话； ④ 一轮演完整再停，只停在真正要你拿主意的地方；随口的小事按性格直接写完，不停在揭晓之前或半截反应上；不写升华总结，不列选项；
+    ⑤ 公正裁决，鲁莽或越级就失败并付出代价。
+context:
+  sliding_window_turns: 8
+  auto_inject_cards: true
+  authors_note_enabled: true
+  challenge_streak_threshold: 3
+web:
+  host: 127.0.0.1
+  port: 8000
+  default_theme: default-template

@@ -1,0 +1,62 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python engine/tools/dice.py:*)",
+      "Bash(python engine/tools/clock.py:*)",
+      "Bash(python engine/tools/validate.py:*)",
+      "Bash(python engine/tools/apply.py:*)",
+      "Bash(python engine/tools/context.py:*)",
+      "Bash(python engine/tools/newsave.py:*)",
+      "Bash(python engine/tools/pack_io.py:*)",
+      "Bash(python engine/tools/index.py:*)",
+      "Bash(python engine/tools/split_md.py:*)",
+      "Bash(python engine/tools/timeline.py:*)",
+      "Bash(python engine/tools/mods.py:*)",
+      "Bash(python engine/tools/ai_log.py:*)",
+      "Bash(python engine/tools/statusline.py:*)",
+      "Bash(python engine/tools/chapters.py:*)",
+      "Bash(python engine/tools/plot.py:*)",
+      "Bash(python engine/tools/story_log.py:*)",
+      "Bash(python engine/tools/pack_setup.py:*)",
+      "Bash(python engine/tools/world_sim.py:*)",
+      "Bash(py engine/tools/dice.py:*)",
+      "Bash(py engine/tools/clock.py:*)",
+      "Bash(py engine/tools/validate.py:*)",
+      "Bash(py engine/tools/apply.py:*)",
+      "Bash(py engine/tools/context.py:*)",
+      "Bash(py engine/tools/newsave.py:*)",
+      "Bash(py engine/tools/pack_io.py:*)",
+      "Bash(py engine/tools/index.py:*)",
+      "Bash(py engine/tools/split_md.py:*)",
+      "Bash(py engine/tools/timeline.py:*)",
+      "Bash(py engine/tools/mods.py:*)",
+      "Bash(py engine/tools/ai_log.py:*)",
+      "Bash(py engine/tools/statusline.py:*)",
+      "Bash(py engine/tools/chapters.py:*)",
+      "Bash(py engine/tools/plot.py:*)",
+      "Bash(py engine/tools/story_log.py:*)",
+      "Bash(py engine/tools/pack_setup.py:*)",
+      "Bash(py engine/tools/world_sim.py:*)",
+      "Bash(.venv/Scripts/python.exe engine/tools/*:*)",
+      "Bash(.venv/bin/python engine/tools/*:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python engine/tools/validate.py --hook"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python engine/tools/statusline.py",
+    "padding": 0
+  }
+}

@@ -1,0 +1,35 @@
+# 机器可读的通用规则数据（由具体题材包的 rules.yaml 覆盖）
+schema_mapping:
+  rank_field: street_tier
+  affinity_field: chrome_affinity
+  aptitude_field: aptitude
+  engine_field: os_core
+  currency_field: eddies
+
+levels: [Lv1, Lv2, Lv3, Lv4, Lv5, Lv6, Lv7, Lv8, Lv9]
+ranks:
+  - {name: 平民, levels: false, attr_range: [1, 3], lifespan: 75}
+  - {name: 街头小子, levels: true, attr_range: [2, 5], lifespan: 80}
+  - {name: 老练佣兵, levels: true, attr_range: [4, 8], lifespan: 90}
+  - {name: 王牌独狼, levels: true, attr_range: [7, 12], lifespan: 110}
+  - {name: 暗网幽灵, levels: true, attr_range: [11, 17], lifespan: 140}
+  - {name: 夜城传奇, levels: true, attr_range: [16, 25], lifespan: 200}
+
+attributes: [肉体, 反应, 算力, 酷]
+attitude_axes: [好感, 信任, 敬畏]
+aptitude_axes: [反射神经, 算法直觉]
+aptitude_grades: [下, 中, 上, 绝世]
+
+elements:
+  basic: [重武, 义体, 黑客, 潜行, 交涉]
+  variant: [电磁, 量子]
+
+affinity_grades: [民用, 改装, 军规, 原型]
+grades: [民用, 改装, 军规, 原型]
+grade_steps: [下, 中, 上]
+orientations: [黑客流, 义体流, 枪械流, 潜行流, 交涉流, 综合流]
+skill_types: [攻击, 防御, 机动, 控制, 辅助]
+skill_levels: [入门, 熟练, 精通, 大成, 圆满]
+gear_tiers: [街头级, 改装级, 军规级, 企业特供, 黑墙遗物]
+difficulty: {简单: 6, 普通: 8, 困难: 10, 极难: 12, 传说: 14}
+modifier_cap: 6

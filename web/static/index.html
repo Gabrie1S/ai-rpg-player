@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="default-template" data-dialogue-style="cyber-chamfer" data-quote-style="highlight">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-RPG-Player · 通用文字跑团引擎</title>
+  <link rel="stylesheet" href="/static/themes.css" />
+</head>
+<body>
+  <!-- ==================== [固定系统外壳 1] 顶部系统配置控制栏 ==================== -->
+  <nav class="system-topbar" aria-label="系统固定配置栏">
+    <div class="sys-left">
+      <span class="sys-logo">AI-RPG</span>
+      <select id="save-selector" title="正在玩的这一局，可以切换到其他存档"></select>
+      <button onclick="openNewGame()">新游戏</button>
+      <span class="sys-divider"></span>
+      <button onclick="openPackBrowserModal()" title="查看、导入和管理世界包">世界包中心</button>
+      <button class="accent-outline" onclick="openGenesisModal()" title="连接 AI、选择世界、生成世界、定制界面">开局向导</button>
+    </div>
+
+    <div class="sys-right">
+      <button onclick="openExportModal()">导出</button>
+      <select id="theme-selector" title="切换界面主题（默认跟随当前世界包）" onchange="switchTheme(this.value)">
+        <option value="pack" selected>主题：跟随世界包</option>
+        <option value="default-template">主题：默认</option>
+        <option value="cyberpunk">主题：赛博霓虹</option>
+        <option value="paper-ink">主题：古卷宣纸</option>
+        <option value="minimal-dark">主题：极简暗夜</option>
+      </select>
+      <button onclick="openConfigModal()">驱动与提示词</button>
+      <button id="tuner-dock-toggle" onclick="toggleTunerDock()" title="展开或收起右侧的场外调教窗口">场外调教</button>
+    </div>
+  </nav>
+
+  <!-- ==================== [固定宏观位 2] 世界氛围横幅与自适应世界状态栏 ==================== -->
+  <header class="world-banner" id="world-banner">
+    <div class="world-identity">
+      <div class="world-title-row">
+        <span class="brand-title" id="world-brand-title">AI-RPG-PLAYER</span>
+        <span class="pack-warning-badge" id="pack-missing-badge" style="display:none;"></span>
+      </div>
+      <div class="world-tagline" id="world-tagline"></div>
+    </div>
+    <canvas id="skyline-canvas" width="64" height="8" title="动态世界像素天际线（支持世界包自定义色板）"></canvas>
+    <div class="world-status-widgets" id="status-bar-pills"></div>
+  </header>
+
+  <!-- ==================== 主体三区跑团工作台（宏观布局锁定） ==================== -->
+  <main class="workspace tuner-collapsed" id="main-workspace">
+    <!-- 左区：对话框四周像素绘画画布 + 居中定制对话框流 + 无剧透状态指示条 + 双通道输入台 -->
+    <section class="story-column">
+      <div id="pending-world-bar" class="pending-world-box" style="display:none;"></div>
+      <div class="dialogue-stage-viewport" id="dialogue-stage-viewport">
+        <canvas id="dialogue-pixel-canvas" class="dialogue-pixel-canvas" aria-hidden="true"></canvas>
+        <div class="story-stream" id="story-stream"></div>
+      </div>
+
+      <!-- 防剧透实时推演与幕后演化状态条（仅显示阶段状态，绝不展示思考过程或文件变动） -->
+      <div id="live-status-bar" class="live-status-bar" style="display:none;" aria-live="polite">
+        <span class="live-pulse-dot" id="live-status-dot"></span>
+        <span class="live-status-label" id="live-status-label">正在构思叙事脉络…</span>
+        <button type="button" class="ghost-sm" id="live-status-cancel" style="display:none;" onclick="cancelActiveGenesisStream()">取消</button>
+      </div>
+
+      <div class="composer-area">
+        <div class="composer-inner">
+          <div id="inline-swipe-bar" class="inline-swipe-bar" style="display:none;">
+            <span class="swipe-bar-title">最近一轮</span>
+            <input type="text" id="swipe-feedback-input" placeholder="重演时的额外要求（可留空），例如：让守卫更警惕" />
+            <button type="button" class="primary" onclick="confirmInlineSwipe()">重演</button>
+            <button type="button" onclick="confirmInlineUndo()" title="撤回这一轮，不重新生成；可连续点击逐轮往回退">只撤回</button>
+            <button type="button" onclick="toggleInlineSwipeBar(false)">取消</button>
+          </div>
+          <div class="input-row">
+            <textarea id="action-input" placeholder="输入主角的行动与台词。可以顺手加（场外：注意酒保态度冷淡点），只对本轮生效。" title="Enter 发送，Shift + Enter 换行；划选上方正文可以标记喜欢或不喜欢的写法"></textarea>
+            <button class="primary" id="send-btn" onclick="handlePrimarySendBtn()">发送行动</button>
+          </div>
+          <div class="composer-toolbar">
+            <div class="quick-commands">
+              <button onclick="fillCommand('/recap')" title="/recap">回顾</button>
+              <button onclick="fillCommand('/tick 7 ')" title="/tick">推进时间</button>
+              <button onclick="fillCommand('/gm ')" title="/gm">上帝视角</button>
+              <button onclick="fillCommand('/save')" title="/save">存档</button>
+              <span id="pack-quick-commands" class="quick-commands"></span>
+              <button onclick="swipeLastTurn()" title="撤回最近一轮，可以选择重新生成">重演 / 撤回</button>
+            </div>
+            <div class="composer-right">
+              <label class="effort-picker" id="effort-picker" style="display:none;" title="想得越多写得越细，每轮也等得越久。改了从下一轮起生效">
+                思考
+                <select id="effort-selector" onchange="changeFrontEffort(this.value)">
+                  <option value="low">快速</option>
+                  <option value="medium">平衡</option>
+                  <option value="high">深入</option>
+                  <option value="auto">默认</option>
+                </select>
+              </label>
+              <span class="dual-channel-hint">Enter 发送，Shift + Enter 换行</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 中右区：[固定宏观位 · 内容随 ui_schema 定制] 世界与角色状态面板 -->
+    <aside class="hud-sidebar" aria-label="定制化世界与角色面板">
+      <div class="hud-tabs" id="world-hud-tabs">
+        <button class="hud-tab active" data-tab="scene" onclick="switchHudTab('scene', this)">日志卡</button>
+        <button class="hud-tab" data-tab="sheet" onclick="switchHudTab('sheet', this)">角色状态</button>
+        <button class="hud-tab" data-tab="persona" onclick="switchHudTab('persona', this)">性格</button>
+        <button class="hud-tab" data-tab="milestones" onclick="switchHudTab('milestones', this)">重要时刻</button>
+      </div>
+      <div class="hud-content" id="hud-panel"></div>
+    </aside>
+
+    <!-- 最右区：[固定系统外壳 2] 右侧独立场外调教反馈窗口（按需触发 tuner-agent，上下文隔离） -->
+    <aside class="tuner-dock" id="tuner-dock" aria-label="独立场外调教窗口">
+      <div class="tuner-header">
+        <div>
+          <div class="tuner-title">场外调教助手</div>
+          <div class="tuner-subtitle">需要时才唤醒，不影响主线剧情</div>
+        </div>
+        <button class="ghost-sm" onclick="clearTunerChat()" title="清空场外调教对话记录">清空</button>
+      </div>
+
+      <div class="tuner-quick-chips">
+        <button onclick="fillTunerPrompt('保持宏观布局不变，按当前世界观更换更有沉浸感的配色、正文字体与对话框样式，在四周留白处重新绘制贴合题材的像素风物画，并补齐常态/交战/诡秘/休整四套随剧情动态切换的情境主题 mood_presets')">对话框与像素画</button>
+        <button onclick="fillTunerPrompt('为当前世界主题预设随剧情动态切换的多情境氛围（mood_presets：如常态探索、危机交战、暗流调查、安全休整），配置不同的主强调色、对话框辉光与像素天气粒子，并热刷新界面')">情境主题</button>
+        <button onclick="fillTunerPrompt('把当前世界主题背景调暗一些，调整字体行高让长文阅读更舒服，并热刷新界面')">配色与字体</button>
+        <button onclick="fillTunerPrompt('在玩家状态栏增加一个带上限的进度条组件，并检查角色卡模块显隐')">状态栏与角色卡</button>
+        <button onclick="fillTunerPrompt('最近NPC台词有点啰嗦，请微调文风手册与通用提示词让对话更干脆冷峻')">纠偏文风</button>
+        <button onclick="fillTunerPrompt('帮我把最近一轮故事结尾那段描写润色得更有画面感，不要回滚状态')">润色上段</button>
+      </div>
+
+      <details class="mods-box" id="mods-box" style="display:none;">
+        <summary>本存档的定制（<span id="mods-count">0</span>）</summary>
+        <div id="mods-list"></div>
+      </details>
+
+      <div class="tuner-messages" id="tuner-messages"></div>
+
+      <div class="tuner-composer">
+        <textarea id="tuner-input" rows="3" placeholder="说说你想改什么：配色字体、对话框样式、像素画、文风，或润色上一段…"></textarea>
+        <div class="tuner-btn-row">
+          <button onclick="submitQuickNoteOnly()" title="不调用大模型，仅将上方反馈记入 playtest.md 与 style_pack.md">只记笔记</button>
+          <button class="primary" id="tuner-send-btn" onclick="submitTunerChat()">唤醒调教助手</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 划词正反例一键调教浮窗（内联免弹窗输入） -->
+  <div id="selection-popover">
+    <input type="text" id="selection-reason-input" placeholder="可选：补充一句原因…" />
+    <button onclick="submitStyleExample(true)">喜欢这段</button>
+    <button onclick="submitStyleExample(false)">不喜欢</button>
+  </div>
+  <div id="nonblocking-toast" class="nonblocking-toast" style="display:none;" role="status" aria-live="polite" onclick="hideToast()"></div>
+
+  <!-- ==================== 模态框 1：四阶段初次启动自检与创世引导工作台 (Genesis Onboarding) ==================== -->
+  <div class="modal-backdrop" id="genesis-modal">
+    <div class="modal-card genesis-card">
+      <div class="genesis-head">
+        <h3>开局向导</h3>
+        <button onclick="closeModal('genesis-modal')">关闭</button>
+      </div>
+
+      <div id="genesis-job-banner" class="job-banner" style="display:none;"></div>
+      <div id="genesis-pending-box" class="pending-world-box" style="display:none;"></div>
+
+      <!-- 环境检查：一切正常时不显示 -->
+      <div id="genesis-selfcheck-strip" class="selfcheck-strip" style="display:none;"></div>
+
+      <div id="genesis-driver-alert" class="genesis-banner" style="display:none;"></div>
+      <div id="genesis-unparsed-alert" class="genesis-banner info" style="display:none;"></div>
+
+      <div class="genesis-stepper">
+        <button class="step-pill active" id="gstep-btn-1" onclick="switchGenesisStep(1)">① 连接 AI</button>
+        <button class="step-pill" id="gstep-btn-2" onclick="switchGenesisStep(2)">② 选择世界</button>
+        <button class="step-pill" id="gstep-btn-3" onclick="switchGenesisStep(3)">③ 生成世界</button>
+        <button class="step-pill" id="gstep-btn-4" onclick="switchGenesisStep(4)">④ 定制界面</button>
+      </div>
+
+      <!-- 第一步：连接 AI -->
+      <div class="genesis-panel" id="genesis-step-1">
+        <div class="driver-mode-tabs">
+          <button type="button" class="driver-tab active" id="ob-dtype-api" onclick="selectOnboardingDriverType('api')">API Key</button>
+          <button type="button" class="driver-tab" id="ob-dtype-cli" onclick="selectOnboardingDriverType('cli')">本机 AI 工具</button>
+          <button type="button" class="driver-tab" id="ob-dtype-harness" onclick="selectOnboardingDriverType('harness')">Agent 框架</button>
+        </div>
+
+        <div id="ob-driver-pane-api" class="driver-subpane">
+          <div class="quick-commands" id="ob-api-presets">
+            <button type="button" onclick="applyApiPreset('ob', 'deepseek')">DeepSeek</button>
+            <button type="button" onclick="applyApiPreset('ob', 'openai')">OpenAI</button>
+            <button type="button" onclick="applyApiPreset('ob', 'anthropic')">Claude</button>
+            <button type="button" onclick="applyApiPreset('ob', 'gemini')">Gemini</button>
+            <button type="button" onclick="applyApiPreset('ob', 'openrouter')">OpenRouter</button>
+            <button type="button" onclick="applyApiPreset('ob', 'siliconflow')">SiliconFlow</button>
+            <button type="button" onclick="applyApiPreset('ob', 'ollama')">Ollama（本地）</button>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>API Key</label>
+              <input type="password" id="ob-api-key" placeholder="sk-..." />
+            </div>
+            <div class="form-group">
+              <label>模型</label>
+              <input type="text" id="ob-model" />
+            </div>
+          </div>
+          <details class="more-options">
+            <summary>接口地址和协议</summary>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>接口地址</label>
+                <input type="text" id="ob-api-base" placeholder="https://api.deepseek.com/v1" />
+              </div>
+              <div class="form-group">
+                <label>协议</label>
+                <select id="ob-api-format">
+                  <option value="openai">OpenAI 通用兼容（推荐）</option>
+                  <option value="auto">自动识别</option>
+                  <option value="anthropic">Anthropic 原生 (/v1/messages)</option>
+                </select>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div id="ob-driver-pane-cli" class="driver-subpane" style="display:none;">
+          <div class="form-group">
+            <label>用哪个工具</label>
+            <select id="ob-cli-tool" onchange="syncBackModelCard('ob', true)">
+              <option value="claude">Claude Code</option>
+              <option value="codex">Codex</option>
+              <option value="gemini">Gemini CLI</option>
+              <option value="agy">Antigravity</option>
+              <option value="opencode">OpenCode</option>
+            </select>
+          </div>
+          <div id="ob-cli-detected-list" class="detected-matrix"></div>
+        </div>
+
+        <div id="ob-driver-pane-harness" class="driver-subpane" style="display:none;">
+          <div class="form-group">
+            <label>用哪种方式</label>
+            <select id="ob-harness-mode">
+              <option value="external_ide">在 IDE 里主持（Cursor、Antigravity 等）</option>
+              <option value="openai_agents_sdk">OpenAI Agents SDK（通用兼容）</option>
+              <option value="antigravity_sdk">Antigravity SDK</option>
+              <option value="claude_agent_sdk">Claude Agent SDK</option>
+            </select>
+          </div>
+          <div id="ob-harness-detected-list" class="detected-matrix"></div>
+        </div>
+
+        <div id="ob-back-card" class="back-model-card"></div>
+
+        <div class="genesis-actions">
+          <span class="genesis-status-text" id="gen-status-1"></span>
+          <button type="button" onclick="switchGenesisStep(2)">稍后再配</button>
+          <button type="button" class="primary" id="gen-btn-1" onclick="verifyOnboardingDriverAndNext()">测试并继续</button>
+        </div>
+      </div>
+
+      <!-- 第二步：选择世界 -->
+      <div class="genesis-panel" id="genesis-step-2" style="display:none;">
+        <div id="step2-ready-packs-banner" class="pack-pick-list" style="display:none;"></div>
+
+        <details class="more-options boxed" id="gen-new-world">
+          <summary>用 AI 新建一个世界</summary>
+          <div class="quick-commands">
+            <button type="button" onclick="fillGenesisPreset('steampunk_occult', '维多利亚蒸汽朋克与克苏鲁诡秘调查：齿轮迷雾巨城，蒸汽差分机与古神遗物并存，玩家扮演私人神秘学侦探，需关注理智值与城市恐慌度。')">蒸汽诡秘调查</button>
+              <button type="button" onclick="fillGenesisPreset('rust_wasteland', '铁锈废土与机甲拾荒生存：旧文明轨道坠落后的辐射荒原，净水与旧纪元核心是硬通货，玩家扮演驾驶拼装机甲的边境猎人。')">废土机甲拾荒</button>
+              <button type="button" onclick="fillGenesisPreset('low_magic_crown', '古典低魔权谋与边疆冒险：帝国崩解前夜的冷兵器与禁忌秘术世界，誓约、家族声望与暗流阴谋交织。')">古典低魔权谋</button>
+              <button type="button" onclick="fillGenesisPreset('star_frontier', '星际边境自由佣兵：跳跃门网络边缘的无主星域，巨型航运商会、星盗与远古遗迹勘探队博弈。')">星际边境佣兵</button>
+          </div>
+          <div class="form-group">
+            <label>想玩什么样的世界？</label>
+            <textarea id="gen-concept" rows="3" placeholder="写几句就行，没想好的部分交给 AI"></textarea>
+          </div>
+          <div class="form-group" id="gen-source-row" style="display:none;">
+            <label>基于拖入的设定</label>
+            <select id="gen-source-pack">
+              <option value="">不使用</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>文件夹名（选填）</label>
+            <input type="text" id="gen-pack-id" placeholder="留空自动命名" />
+          </div>
+          <div class="genesis-actions">
+            <button type="button" class="primary" id="gen-btn-2" onclick="runGenesisConceive()">设计新世界</button>
+          </div>
+        </details>
+
+        <details class="more-options boxed">
+          <summary>导入别人分享的世界包</summary>
+          <div
+            id="pack-dropzone"
+            class="pack-dropzone"
+            ondragover="handlePackDragOver(event)"
+            ondragleave="handlePackDragLeave(event)"
+            ondrop="handlePackDrop(event)"
+          >
+            <div class="dropzone-title">把 .rpgpack、.zip 或设定文件夹拖到这里</div>
+            <div class="dropzone-actions">
+              <button type="button" onclick="document.getElementById('pack-archive-input').click()">选择文件</button>
+              <button type="button" onclick="document.getElementById('pack-folder-input').click()">选择文件夹</button>
+            </div>
+            <input type="file" id="pack-archive-input" accept=".rpgpack,.zip" style="display:none;" onchange="handleArchiveInputSelect(event)" />
+            <input type="file" id="pack-folder-input" webkitdirectory directory multiple style="display:none;" onchange="handleFolderInputSelect(event)" />
+          </div>
+        </details>
+        <div id="pack-drop-status" class="genesis-status-text"></div>
+      </div>
+
+      <!-- 第三步：生成世界 -->
+      <div class="genesis-panel" id="genesis-step-3" style="display:none;">
+        <p class="genesis-desc">AI 会在幕后生成这个世界，可能要等一段时间。可以关掉这个页面，回来还能看到进度；关掉启动窗口才会中断，之后可以接着生成。</p>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>世界</label>
+            <select id="gen-seed-pack" onchange="onSeedPackChange()"></select>
+          </div>
+          <div class="form-group">
+            <label>这一局的名字</label>
+            <input type="text" id="gen-world-name" placeholder="比如：第一周目" oninput="renderSeedFormHint()" />
+          </div>
+        </div>
+        <div id="gen-seed-pack-info" class="seed-form-note"></div>
+        <div id="gen-name-hint" class="seed-form-note" style="display:none;"></div>
+        <div id="gen-setup-fields"></div>
+        <div class="form-group">
+          <label id="gen-pref-label">主角和开局的想法（选填）</label>
+          <textarea id="gen-protagonist-pref" rows="2" placeholder="留空也可以"></textarea>
+        </div>
+        <div class="genesis-actions">
+          <button type="button" onclick="switchGenesisStep(2)">上一步</button>
+          <button type="button" id="gen-blank-btn" title="先不生成世界，建一个空白存档" onclick="createBlankSave()">只建空白存档</button>
+          <button type="button" class="primary" id="gen-btn-3" onclick="runGenesisSeed()">开始生成</button>
+        </div>
+      </div>
+
+      <!-- 第四步：定制界面 -->
+      <div class="genesis-panel" id="genesis-step-4" style="display:none;">
+        <p class="genesis-desc">换配色、字体、对话框样式和四周的像素画，布局不变。不写要求就由 AI 设计。</p>
+        <div class="quick-commands">
+          <button type="button" onclick="fillUiStylePreset('赛博切角霓虹对话框（cyber-chamfer），冷青与品红高对比暗色，等宽标题配清爽黑体正文；对话框左右留白绘制赛博雨夜窄巷、霓虹招牌与悬停侦察无人机像素画；同时预设常态巡街（霓虹细雨）、交火警报（赤红火星）、暗网潜行（冷蓝迷雾）、黑市休整（暖金微光）四套随剧情动态切换的情境主题。')">赛博霓虹雨巷</button>
+          <button type="button" onclick="fillUiStylePreset('羊皮古卷对话框（parchment-scroll），温润宣纸米白配朱砂墨绿，宋明衬线正文字体；对话框四周留白绘制远山云雾、悬崖古松与石灯笼像素画；同时预设山道寻访（流萤微光）、兵戈破阵（金铁余烬）、秘境探幽（浓雾青灯）、客栈围炉（暖茶柔光）四套随剧情动态切换的情境主题。')">古卷远山云松</button>
+          <button type="button" onclick="fillUiStylePreset('哥特雕花对话框（gothic-ornate），深渊墨紫配古铜暗金，古典衬线字体；对话框四周留白绘制尖拱彩窗、铸铁街灯与渡鸦石像鬼像素画；同时预设迷雾街区（夜雾飘散）、禁忌仪式（血色余烬）、古宅调查（幽绿星尘）、壁炉书房（暖金微光）四套随剧情动态切换的情境主题。')">哥特彩窗街灯</button>
+          <button type="button" onclick="fillUiStylePreset('复古 CRT 绿磷终端对话框（terminal-crt），黑底琥珀绿扫描线，终端等宽字体；对话框四周留白绘制废土残骸、雷达信标塔与火星余烬像素画；同时预设荒原巡航（辐射尘埃）、遭遇交战（过载红警）、遗迹潜入（静默深蓝）、营地整备（琥珀暖光）四套随剧情动态切换的情境主题。')">废土终端</button>
+        </div>
+        <div class="form-group">
+          <label>想要什么风格？（选填）</label>
+          <textarea id="gen-ui-pref" rows="2" placeholder="比如：深绿配古铜色，四周画煤气街灯和迷雾"></textarea>
+        </div>
+        <details class="more-options">
+          <summary>要定制哪个世界</summary>
+          <div class="form-group">
+            <select id="gen-ui-pack"></select>
+          </div>
+        </details>
+        <div class="genesis-actions">
+          <button type="button" onclick="closeModal('genesis-modal')">跳过</button>
+          <button type="button" class="primary" id="gen-btn-4" onclick="runGenesisCustomizeUi()">生成界面</button>
+        </div>
+      </div>
+
+      <div id="genesis-result-box" class="genesis-result" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 模态框 2：世界包浏览、深度体检与热切换中心 (Pack Hub) ==================== -->
+  <div class="modal-backdrop" id="pack-browser-modal">
+    <div class="modal-card wide">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin-bottom:0;">世界包中心</h3>
+        <div style="display:flex; gap:8px;">
+          <button onclick="document.getElementById('pack-archive-input').click()">导入</button>
+          <button onclick="refreshPackBrowser()">重新扫描</button>
+          <button onclick="closeModal('pack-browser-modal'); openGenesisModal(2);">新建世界</button>
+          <button onclick="closeModal('pack-browser-modal')">关闭</button>
+        </div>
+      </div>
+
+      <div class="pack-browser-grid">
+        <div class="pack-list-col" id="pack-browser-list"></div>
+        <div class="pack-detail-col" id="pack-browser-detail">
+          <div class="hud-empty">在左边选一个世界包。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== 模态框 3：驱动与通用提示词配置 ==================== -->
+  <div class="modal-backdrop" id="config-modal">
+    <div class="modal-card">
+      <h3>驱动与提示词</h3>
+      <div class="form-group">
+        <label>怎么连接 AI</label>
+        <select id="cfg-front-type" onchange="toggleConfigModalDriverFields()">
+          <option value="api">API Key</option>
+          <option value="cli">本机 AI 工具</option>
+          <option value="harness">Agent 框架</option>
+        </select>
+      </div>
+
+      <div id="cfg-pane-api">
+        <div class="quick-commands" style="margin-bottom:8px;">
+          <button type="button" onclick="applyApiPreset('cfg', 'deepseek')">DeepSeek</button>
+          <button type="button" onclick="applyApiPreset('cfg', 'openai')">OpenAI</button>
+          <button type="button" onclick="applyApiPreset('cfg', 'anthropic')">Claude原生</button>
+          <button type="button" onclick="applyApiPreset('cfg', 'gemini')">Gemini</button>
+          <button type="button" onclick="applyApiPreset('cfg', 'openrouter')">OpenRouter</button>
+          <button type="button" onclick="applyApiPreset('cfg', 'ollama')">Ollama本地</button>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>协议类型（API Format）</label>
+            <select id="cfg-api-format">
+              <option value="openai">OpenAI 通用兼容 (/chat/completions · 推荐)</option>
+              <option value="auto">自动识别</option>
+              <option value="anthropic">Anthropic 原生 (/v1/messages)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>模型名称（Model）</label>
+            <input type="text" id="cfg-model" placeholder="deepseek-chat / gpt-4.1 / claude-sonnet-5-5" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>API Base URL</label>
+          <input type="text" id="cfg-api-base" placeholder="https://api.deepseek.com/v1" />
+        </div>
+        <div class="form-group">
+          <label>API Key（留空则保持已保存密钥或读取环境变量）</label>
+          <input type="password" id="cfg-api-key" placeholder="sk-..." />
+        </div>
+      </div>
+
+      <div id="cfg-pane-cli" style="display:none;">
+        <div class="form-group">
+          <label>CLI 工具名（支持主流本地编程/对话 CLI）</label>
+          <select id="cfg-cli-tool" onchange="syncBackModelCard('cfg', true)">
+            <option value="claude">claude (Anthropic Claude Code CLI)</option>
+            <option value="codex">codex (OpenAI Codex CLI)</option>
+            <option value="gemini">gemini (Google Gemini CLI)</option>
+            <option value="agy">agy (Google Antigravity CLI)</option>
+            <option value="opencode">opencode (OpenCode CLI)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="cfg-pane-harness" style="display:none;">
+        <div class="form-group">
+          <label>Agent Harness 运行形态</label>
+          <select id="cfg-harness-mode">
+            <option value="external_ide">外部 IDE / 终端原生协同模式（Antigravity / Cursor / Claude Code / Codex）</option>
+            <option value="openai_agents_sdk">OpenAI Agents SDK (`openai-agents` · 通用兼容)</option>
+            <option value="antigravity_sdk">Google Antigravity Python SDK (`google-antigravity`)</option>
+            <option value="claude_agent_sdk">Anthropic Claude Agent SDK (`claude-agent-sdk`)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="cfg-effort-group">
+        <label>台前思考强度（主持每一轮，玩家等它出字）</label>
+        <select id="cfg-front-effort">
+          <option value="low">快速：出字最快，日常推荐</option>
+          <option value="medium">平衡：多想一些，等得也久一些</option>
+          <option value="high">深入：想得最细，每轮等得最久</option>
+          <option value="auto">跟随模型默认</option>
+        </select>
+        <label style="margin-top:10px;">幕后思考强度（推演世界、排剧情，不用等它出字）</label>
+        <select id="cfg-back-effort">
+          <option value="high">深入：默认，剧情和因果排得更周全</option>
+          <option value="max">最深：最周全，也最慢最贵</option>
+          <option value="medium">平衡</option>
+          <option value="low">快速</option>
+          <option value="auto">跟随模型默认</option>
+        </select>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">命令行和 API 驱动都生效；接口不支持时自动忽略。</div>
+      </div>
+
+      <div id="cfg-back-card" class="back-model-card"></div>
+      <div class="form-group">
+        <label>
+          <span>通用叙事与防踩坑文风提示词模板（允许自由微调）</span>
+          <button type="button" onclick="resetDefaultPrompt()" style="padding:2px 8px;font-size:0.75rem;">恢复精调模板</button>
+        </label>
+        <textarea id="cfg-narrative-prompt" rows="5" style="line-height:1.5;font-size:0.82rem;"></textarea>
+      </div>
+      <div id="cfg-verify-feedback" style="font-size:0.8rem; color:var(--accent-primary); min-height:18px;"></div>
+      <div style="display:flex; justify-content:space-between; gap:8px; margin-top:12px;">
+        <button type="button" onclick="testConfigModalDriver()">🔌 实测驱动连接</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="closeModal('config-modal')">取消</button>
+          <button type="button" class="primary" onclick="saveConfig()">保存配置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 模态框 4：操作确认（放在向导之后，叠在它上面） ==================== -->
+  <div class="modal-backdrop" id="confirm-modal">
+    <div class="modal-card">
+      <h3 id="confirm-title"></h3>
+      <p class="genesis-desc" id="confirm-body"></p>
+      <div class="genesis-actions">
+        <button type="button" id="confirm-no"></button>
+        <button type="button" class="danger-stop" id="confirm-yes"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 模态框 5：三模式导出 ==================== -->
+  <div class="modal-backdrop" id="export-modal">
+    <div class="modal-card">
+      <h3>📦 世界工坊 · 三模式导出</h3>
+      <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">
+        将当前世界包或你精心游玩/打磨的世界导出至 <code>exports/</code> 目录：
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button onclick="runExport('pack')" style="text-align:left; padding:12px;">
+          <strong>① 导出「纯净题材规则包」（.rpgpack）</strong><br/>
+          <span style="font-size:0.8rem; color:var(--text-muted);">含世界观总纲、等级属性表、定制化状态栏/角色卡 ui_schema 及专属对话框/像素画主题</span>
+        </button>
+        <button onclick="runExport('seed')" style="text-align:left; padding:12px;">
+          <strong>② 导出「脱敏世界母本种子」（第0天开局态 .rpgpack）★推荐分享</strong><br/>
+          <span style="font-size:0.8rem; color:var(--text-muted);">完整保留当前存档生成的所有势力、地图、NPC 与深层阴谋，自动抹除个人游玩日志，全程静默防剧透</span>
+        </button>
+        <button onclick="runExport('novel_html')" style="text-align:left; padding:12px;">
+          <strong>③ 导出「跑团小说成品」（HTML 独立书卷 &amp; Markdown）</strong><br/>
+          <span style="font-size:0.8rem; color:var(--text-muted);">将 log/story/ 原文档案与重要时刻汇编成排版优美的单本小说</span>
+        </button>
+      </div>
+      <div id="export-result" style="margin-top:12px; font-size:0.85rem; color:var(--accent-primary);"></div>
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button onclick="closeModal('export-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

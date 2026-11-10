@@ -1,0 +1,7 @@
+# 核心必选依赖（仅需 PyYAML 即可通过内置标准库 HTTP/SSE 引擎运行完整游戏）
+pyyaml>=6.0
+
+# 可选高性能 Web / 连接池加速层（未安装时 web/server.py 与 api_driver.py 自动回退标准库）
+fastapi>=0.100.0
+uvicorn>=0.23.0
+httpx>=0.24.0

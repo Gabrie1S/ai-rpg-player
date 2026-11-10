@@ -1,0 +1,190 @@
+{
+  "id": "ink-wash",
+  "name": "宣纸水墨",
+  "css_vars": {
+    "--bg-main": "#f1ebde",
+    "--bg-panel": "#e9e1d1",
+    "--bg-card": "#faf6ec",
+    "--bg-input": "#fffdf7",
+    "--text-main": "#2b2620",
+    "--text-muted": "#74695a",
+    "--accent-primary": "#9c3a2a",
+    "--accent-secondary": "#2f5d62",
+    "--accent-warn": "#a8690f",
+    "--accent-danger": "#a8281f",
+    "--accent-ok": "#3b7a57",
+    "--border-color": "#d8cdb8",
+    "--radius-card": "6px",
+    "--challenge-bg": "rgba(156, 58, 42, 0.07)",
+    "--challenge-border": "#9c3a2a",
+    "--dialogue-color": "#24525c"
+  },
+  "typography": {
+    "font_body": "'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif",
+    "font_heading": "'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif",
+    "font_dialogue": "'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif",
+    "story_font_size": "16.5px",
+    "story_line_height": "1.95",
+    "letter_spacing": "0.02em"
+  },
+  "dialogue_box": {
+    "style": "parchment-scroll",
+    "max_width": "760px",
+    "gutter_x": "96px",
+    "border_width": "1px",
+    "glow_color": "transparent",
+    "corner_ornament": "",
+    "quote_style": "highlight"
+  },
+  "skyline": {
+    "style": "nature",
+    "sky_top": [
+      226,
+      218,
+      200
+    ],
+    "sky_bot": [
+      241,
+      235,
+      222
+    ],
+    "far": [
+      176,
+      174,
+      164
+    ],
+    "near": [
+      120,
+      124,
+      118
+    ],
+    "ground": [
+      88,
+      92,
+      88
+    ],
+    "accent1": [
+      156,
+      58,
+      42
+    ],
+    "accent2": [
+      47,
+      93,
+      98
+    ],
+    "highlight": [
+      156,
+      58,
+      42
+    ]
+  },
+  "pixel_frame": {
+    "enabled": true,
+    "scene": "misty_mountains",
+    "weather": "fog",
+    "palette": {
+      "1": "#9c3a2a",
+      "2": "#2f5d62",
+      "3": "#c9a24b",
+      "4": "#5a5f58",
+      "5": "#8f938a",
+      "6": "#f6f1e4"
+    },
+    "sprites": [
+      {
+        "id": "pine",
+        "anchor": "left-bottom",
+        "scale": 4,
+        "rows": [
+          "......2.....",
+          ".....222....",
+          "....22222...",
+          "...2222222..",
+          ".....222....",
+          "....22222...",
+          "...2222222..",
+          "..222222222.",
+          ".....44.....",
+          ".....44.....",
+          ".....44.....",
+          "....4444...."
+        ]
+      },
+      {
+        "id": "moon",
+        "anchor": "right-top",
+        "scale": 4,
+        "rows": [
+          "...3333.....",
+          "..33333.....",
+          ".33333......",
+          ".3333.......",
+          ".3333.......",
+          ".33333......",
+          "..33333.....",
+          "...3333....."
+        ]
+      },
+      {
+        "id": "lantern",
+        "anchor": "right-mid",
+        "scale": 4,
+        "rows": [
+          "....44....",
+          "....44....",
+          "..111111..",
+          ".11333311.",
+          ".11333311.",
+          ".11333311.",
+          "..111111..",
+          "....33....",
+          "....3....."
+        ]
+      }
+    ]
+  },
+  "mood_presets": {
+    "default": {
+      "label": "山居·常日",
+      "weather": "fog"
+    },
+    "combat": {
+      "label": "交锋·杀机",
+      "weather": "embers",
+      "border_glow": "rgba(168, 40, 31, 0.14)",
+      "css_vars": {
+        "--accent-primary": "#a8281f",
+        "--border-color": "#cfae9f",
+        "--dialogue-color": "#7a1f17"
+      }
+    },
+    "mystery": {
+      "label": "天机·夜深",
+      "weather": "starlight",
+      "border_glow": "rgba(143, 164, 200, 0.12)",
+      "css_vars": {
+        "--bg-main": "#14171f",
+        "--bg-panel": "#1a1e28",
+        "--bg-card": "#20252f",
+        "--bg-input": "#171a23",
+        "--text-main": "#dfe2e6",
+        "--text-muted": "#8e95a3",
+        "--accent-primary": "#8fa4c8",
+        "--accent-secondary": "#c9a24b",
+        "--border-color": "#2f3542",
+        "--dialogue-color": "#b7c7e0"
+      }
+    },
+    "rest": {
+      "label": "安歇·灯下",
+      "weather": "fireflies",
+      "css_vars": {
+        "--accent-primary": "#a8690f",
+        "--bg-main": "#f3ead6",
+        "--bg-card": "#fbf4e2",
+        "--dialogue-color": "#6b4a18"
+      }
+    }
+  }
+}

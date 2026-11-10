@@ -1,0 +1,220 @@
+{
+  "id": "cyberpunk",
+  "name": "赛博霓虹终端 (Cyberpunk Neon)",
+  "font_body": "'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+  "font_mono": "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+  "css_vars": {
+    "--bg-main": "#0a0c12",
+    "--bg-panel": "#10131c",
+    "--bg-card": "#151925",
+    "--bg-input": "#0d1018",
+    "--text-main": "#e2e8f0",
+    "--text-muted": "#8b98ad",
+    "--accent-primary": "#2fd9e8",
+    "--accent-secondary": "#f0528f",
+    "--accent-warn": "#f2b33d",
+    "--accent-danger": "#f0605d",
+    "--border-color": "#252c3d",
+    "--radius-card": "8px",
+    "--challenge-bg": "rgba(240, 82, 143, 0.1)",
+    "--challenge-border": "#f0528f",
+    "--dialogue-color": "#8fe6f2",
+    "--font-body": "'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    "--font-mono": "'JetBrains Mono', 'Cascadia Code', Consolas, monospace"
+  },
+  "typography": {
+    "font_body": "'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    "font_heading": "'JetBrains Mono', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    "font_dialogue": "'PingFang SC', 'Microsoft YaHei', sans-serif",
+    "story_font_size": "16px",
+    "story_line_height": "1.9",
+    "letter_spacing": "0.01em"
+  },
+  "dialogue_box": {
+    "style": "cyber-chamfer",
+    "max_width": "760px",
+    "gutter_x": "96px",
+    "border_width": "1px",
+    "glow_color": "rgba(47, 217, 232, 0.07)",
+    "bg_opacity": 0.92,
+    "corner_ornament": "",
+    "quote_style": "bracket-glow"
+  },
+  "skyline": {
+    "style": "urban",
+    "sky_top": [
+      10,
+      12,
+      28
+    ],
+    "sky_bot": [
+      28,
+      20,
+      52
+    ],
+    "far": [
+      24,
+      28,
+      54
+    ],
+    "near": [
+      16,
+      18,
+      36
+    ],
+    "ground": [
+      18,
+      22,
+      38
+    ],
+    "accent1": [
+      0,
+      240,
+      255
+    ],
+    "accent2": [
+      255,
+      42,
+      133
+    ],
+    "highlight": [
+      255,
+      210,
+      60
+    ]
+  },
+  "pixel_frame": {
+    "enabled": true,
+    "scene": "cyber_alley",
+    "weather": "neon_rain",
+    "palette": {
+      "1": "#00f0ff",
+      "2": "#ff2a85",
+      "3": "#ffb800",
+      "4": "#1b2438",
+      "5": "#364669",
+      "6": "#e2e8f0"
+    },
+    "sprites": [
+      {
+        "id": "neon_alley_sign",
+        "anchor": "left-top",
+        "scale": 4,
+        "rows": [
+          "5555111111..",
+          "..441222214.",
+          "..422626224.",
+          "..426262624.",
+          "..422232224.",
+          "..411333114.",
+          "..426222624.",
+          "..422666224.",
+          "..441222214.",
+          "....11..11..",
+          "....2....2..",
+          "............"
+        ]
+      },
+      {
+        "id": "recon_drone",
+        "anchor": "right-top",
+        "scale": 4,
+        "rows": [
+          "11........11",
+          ".55..11..55.",
+          "..44555544..",
+          ".4551661554.",
+          ".4522662254.",
+          "..44533544..",
+          "...5.11.5...",
+          "..1......1..",
+          "............",
+          "............"
+        ]
+      },
+      {
+        "id": "cyber_kiosk",
+        "anchor": "left-bottom",
+        "scale": 4,
+        "rows": [
+          "..44111144..",
+          ".4551111554.",
+          ".4516116154.",
+          ".4511221154.",
+          ".4516116154.",
+          ".4555555554.",
+          ".4522332254.",
+          ".4544444454.",
+          ".4541111454.",
+          ".4555555554.",
+          ".4444444444.",
+          "555555555555"
+        ]
+      },
+      {
+        "id": "neural_jack_crest",
+        "anchor": "right-bottom",
+        "scale": 4,
+        "rows": [
+          "...1....1...",
+          ".1.144441.1.",
+          "..14511541..",
+          ".1451221541.",
+          "..41266214..",
+          ".1412662141.",
+          "..45122154..",
+          ".1455115541.",
+          "..1.4444.1..",
+          "...1.33.1...",
+          ".....33.....",
+          "............"
+        ]
+      }
+    ]
+  },
+  "mood_presets": {
+    "default": {
+      "label": "🌧️ 常态·霓虹夜雨",
+      "weather": "neon_rain",
+      "bg_top": "#06080f",
+      "bg_bottom": "#111628",
+      "border_glow": "0 0 24px rgba(0, 240, 255, 0.16)"
+    },
+    "combat": {
+      "label": "🔥 交火·高危警报",
+      "weather": "embers",
+      "bg_top": "#16070d",
+      "bg_bottom": "#2a0c18",
+      "border_glow": "0 0 28px rgba(255, 42, 133, 0.32)",
+      "css_vars": {
+        "--accent-primary": "#ff3b6b",
+        "--border-color": "#4f1d32",
+        "--dialogue-color": "#ff9eb5"
+      }
+    },
+    "mystery": {
+      "label": "🌫️ 潜行·暗网迷雾",
+      "weather": "fog",
+      "bg_top": "#050914",
+      "bg_bottom": "#0e1c30",
+      "border_glow": "0 0 24px rgba(124, 92, 255, 0.24)",
+      "css_vars": {
+        "--accent-primary": "#8b5cf6",
+        "--border-color": "#2b2554",
+        "--dialogue-color": "#c4b5fd"
+      }
+    },
+    "rest": {
+      "label": "☕ 休整·安全屋微光",
+      "weather": "fireflies",
+      "bg_top": "#0d0b0a",
+      "bg_bottom": "#1d1612",
+      "border_glow": "0 0 22px rgba(245, 158, 11, 0.18)",
+      "css_vars": {
+        "--accent-primary": "#f59e0b",
+        "--border-color": "#3f2e1e",
+        "--dialogue-color": "#fde68a"
+      }
+    }
+  }
+}

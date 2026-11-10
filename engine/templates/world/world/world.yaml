@@ -1,0 +1,13 @@
+name: 未命名世界
+pack: cyberpunk
+genre: 赛博朋克
+calendar:
+  format: modern
+  era: NC.
+  start_year: 2084
+  start_month: 11
+  start_day: 1
+  months_per_year: 12
+  days_per_month: 30
+tick_days: 7
+snapshot_days: 90

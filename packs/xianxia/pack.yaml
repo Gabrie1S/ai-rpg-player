@@ -1,0 +1,66 @@
+id: xianxia
+name: 一线天
+version: "1.0.0"
+genre: 国风修仙
+author: AI-RPG-Player
+description: 尔虞我诈、真情难寻的修仙世界。12 岁的少年离开村庄，寻找失踪的养父，靠窥见后果的“一线天”走过一条算计丛生的长生路。
+theme: ink-wash
+optional_skills: [causal-foresight]
+
+# 这个包很完整：只问主角名字，其他都由作者定好；界面已做好，想改也可以改
+setup:
+  - {id: name, label: "主角的名字", mode: ask, required: false, target: sheet.name, hint: "留空由 AI 起名"}
+  - {id: ui, mode: default}
+
+calendar:
+  era: 天元
+  start_year: 3726
+  start_month: 11
+  start_day: 1
+  months_per_year: 12
+  days_per_month: 30
+  month_names: ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "冬月", "腊月"]
+  day_names: ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"]
+
+ui_schema:
+  tagline: "资源有限，寿元有限，真情难寻"
+  hud_tabs:
+    scene:      {label: "行囊手记", icon: "📜"}
+    sheet:      {label: "修为", icon: "🧘"}
+    persona:    {label: "心性", icon: "🪷"}
+    milestones: {label: "平生大事", icon: "🏮"}
+
+  world_status:
+    - {key: date, label: "历法", icon: "🗓️", widget: badge, tone: accent}
+    - {key: season, label: "时节", icon: "🍂", widget: badge}
+    - {key: loc, label: "所在", icon: "📍", widget: badge}
+
+  player_status:
+    - {key: rank, label: "境界", icon: "☯️", widget: kv}
+    - {key: affinity, label: "灵根", icon: "🌿", widget: kv}
+    - {key: aptitude, label: "资质", icon: "🎐", widget: kv}
+    - {key: core_engine, label: "功法", icon: "📖", widget: kv}
+    - {key: currency, label: "灵石", icon: "💎", widget: kv}
+
+  character_sheet:
+    attributes_title: "四项属性"
+    sections:
+      - {id: status_widgets, title: "修行状况", visible: true}
+      - {id: attributes, title: "四项属性", visible: true}
+      - {id: abilities, title: "天赋能力", visible: true, hide_empty: true}
+      - {id: skills, title: "术法武技", visible: true, hide_empty: true}
+      - {id: gear, title: "法器法宝", visible: true, hide_empty: true}
+      - {id: reputation, title: "门派声望", visible: true, hide_empty: true}
+      - {id: inventory, title: "行囊与备注", visible: true}
+
+  journal_sections:
+    - {id: goals, title: "当前目标", icon: "🎯", hint: "主角眼下要做的事，做完就删"}
+    - {id: people, title: "认识的人", icon: "🤝", hint: "每人一句：身份和关系，变了就改这一条"}
+    - {id: rumors, title: "听到的传闻", icon: "🍵", hint: "听来的消息，证实或落空了就删"}
+    - {id: secrets, title: "知道的秘密", icon: "🗝️", hint: "别人瞒着、主角却知道的事"}
+
+  panels:
+    - {id: cultivation, label: "修行图", icon: "🏔️"}
+
+  quick_commands:
+    - {label: "发动一线天", command: "/yixiantian", hint: "窥见某个选择的三种可能结局"}
