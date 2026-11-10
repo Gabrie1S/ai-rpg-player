@@ -1,43 +1,43 @@
 # AI-RPG-Player
 
-**AI 驱动的单人文字跑团引擎 · 开发中**
+**AI-powered solo text RPG engine · In development**
 
-在浏览器里输入角色的行动，AI 主持人会接着讲故事，引擎则记录时间、角色状态和世界变化。内置赛博朋克和国风修仙两套世界包，同一套引擎可以切换不同题材的规则和界面。
+Describe what your character does in the browser, and an AI game master narrates the outcome. The engine tracks in-game time, character state, and changes to the world across turns. Two bundled world packs, cyberpunk and Chinese cultivation fantasy (xianxia), demonstrate how the same engine can run different settings with their own rules and interfaces.
 
-![赛博朋克世界包的跑团界面，左侧显示玩家行动与故事，右侧显示任务和角色信息](docs/gameplay.webp)
+![Cyberpunk game interface showing the player's action and the story on the left, with objectives and character status on the right](docs/gameplay.webp)
 
-*本地运行截图，使用虚构演示存档。*
+*Screenshot of the current Chinese-language interface, taken from a local run with a fictional demo save.*
 
-## 能做什么
+## Features
 
-- **用自然语言行动**。故事实时流式显示，右侧面板展示场景、角色状态和任务。可以随时提出场外意见，调整这一局的叙事风格。
-- **撤回或重演回合**。回合可以改变存档里的时间、角色和事件。引擎先校验变更，再写入存档并创建 Git 快照。失败或取消时回滚当轮变更。
-- **换世界，换模型**。世界包包含规则、开局模板、主题和面板。模型可通过 OpenAI 兼容 API、Anthropic API 或 Codex、Claude Code 等本地 CLI 接入。
+- **Play in natural language.** The story streams as it is generated, while the sidebar shows the scene, character status, and objectives. Use out-of-character feedback to adjust the narration style during a session.
+- **Undo or replay turns.** The engine validates state changes before applying them and records completed turns as Git snapshots. It rolls back changes if a turn fails or is canceled.
+- **Swap worlds and model backends.** World packs bundle rules, starting templates, themes, and panels. Connect a model through an OpenAI-compatible API, the Anthropic API, or a local CLI such as Codex or Claude Code.
 
-## 工程设计
+## Architecture
 
-| 模块 | 职责 |
+| Component | Role |
 | --- | --- |
-| [运行时](engine/runtime/) | 把当前场景和相关设定装入上下文，协调台前叙事、幕后世界推演和模型驱动 |
-| [状态工具](engine/tools/) | 校验模型提出的状态变更，处理原子回写、回滚和回合快照 |
-| [世界包](packs/) | 将题材规则、存档模板和 UI 配置与引擎分开 |
-| [Web 界面](web/) | Python 本地服务通过 SSE 推送故事，浏览器用原生 JavaScript 渲染叙事和状态栏 |
+| [Runtime](engine/runtime/) | Builds model context from the current scene and relevant world data, then coordinates narration, background world simulation, and model drivers. |
+| [State tools](engine/tools/) | Validate model-proposed changes, apply updates atomically, and manage rollbacks and turn snapshots. |
+| [World packs](packs/) | Keep setting-specific rules, save templates, and UI configuration separate from the engine. |
+| [Web interface](web/) | A local Python server streams events via Server-Sent Events (SSE). The browser renders the story and status panels with vanilla JavaScript. |
 
-## 快速开始
+## Quick start
 
-需要 **Python 3.9+** 和 **Git**。Windows 可双击 `启动游戏.bat`，macOS 可双击 `启动游戏.command`，也可以在项目目录运行：
+Requires **Python 3.9+** and **Git**. Double-click `启动游戏.bat` on Windows or `启动游戏.command` on macOS, or run the launcher from the repository root.
 
 ```bash
 python start.py
 ```
 
-启动器会准备依赖并打开本地页面。首次运行时，按「开局向导」配置自己的模型 API 密钥或已登录的本地 CLI，再选择世界包。服务绑定本机回环地址。API 密钥和个人存档保存在被 Git 忽略的本地文件中。
+The launcher installs dependencies and opens the app in your browser. On first launch, use the setup wizard to configure your own API key or an authenticated local CLI, then select a world pack. The web server listens on localhost. Local credentials and personal saves are excluded from Git.
 
-## 回归测试
+## Regression tests
 
 ```bash
 python -m pip install -r requirements.txt
 python tests/run_all.py
 ```
 
-测试在临时项目副本中运行，覆盖流式输出、存档隔离、世界包导入和回合回滚等流程。文件格式见 [引擎数据规范](engine/docs/schema.md)。
+The suite runs in a temporary copy of the project and covers streaming, save isolation, world pack imports, and turn rollback. See the [engine data schema](engine/docs/schema.md) for file formats.
